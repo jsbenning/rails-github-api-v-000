@@ -1,6 +1,21 @@
 <div class = "container">
+  <% if @name %>
+  <h2><%= @name %></h2>
+  <% end %>
+    <% if @my_resp %>
+  <h2><%= @my_resp%></h2>
+  <% end %>
+
+
+
+
   <h1>Repos</h1>
   <!-- List repositories here! -->
+  <% if @repos %>
+    <% @repos.each do |r| %>
+      <p><%= r %></p>
+    <% end %>
+  <% end %>
 
   <%= form_tag("/repositories/create", method: "post") do %>
     <%= label_tag(:name, "Create a New Repo:") %>

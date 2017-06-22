@@ -1,59 +1,56 @@
 class RepositoriesController < ApplicationController
+  before_action :authenticate_user
 
 
   def index
+    resp = Faraday.get("https://api.github.com/user") do |req|
+      req.params['access_token'] = session[:token]   
+    end
+     
+    @name = JSON.parse(resp.body)["login"]
+
+    @repos = pull_repos(@name)
+    
+
   end
 
   def create
+    new_repo = params["name"]
+    @my_resp = post_repo(new_repo)
+    render 'index'
+  end
+
+private
+
+  def pull_repos(name)
+    repo_list = Faraday.get("https://api.github.com/users/#{name}/repos?per_page=100") do |req|
+    end
+
+    my_list = JSON.parse(repo_list.body)
+    my_list.map{ |x| x["name"] }
+  end
+
+  def post_repo(name)
+    conn = Faraday.new(:url => 'https://api.github.com/user') 
+
+    resp = conn.post do |req|
+      req.url '/repos'
+      #req.headers['Authorization'] = "token " + session[:token]
+      req.headers['Content-Type'] = 'application/json'
+      req.body = '{ "name": "#{name}" }'
+    end
+
+    github_response = JSON.parse(resp.body) 
+
+    # if resp.success?
+    #   github_response = JSON.parse(resp.body) + name
+    # else
+    #   github_response = JSON.parse(resp.body)
+    # end
   end
 end
 
 
-=begin
-  
-rescue 
 
-  def search
     
-  end
-
-
-  def friends
-    resp = Faraday.get("https://api.foursquare.com/v2/users/self/friends") do |req|
-      req.params['oauth_token'] = session[:token]
-      # don't forget that pesky v param for versioning
-      req.params['v'] = '20160201'
-    end
-    @friends = JSON.parse(resp.body)["response"]["friends"]["items"]
-  end
-
-  def foursquare
-    client_id = "ZNGFAGHHFLSVHSNO51ANV20E3XTWTH4F5212DBD3BN05RD1G"#ENV['FOURSQUARE_CLIENT_ID']
-    client_secret = "OYE4WVEUCIB01AEF3OZHY35A2QJ3C5PAH2WSMHI4N44W1YOX"#ENV['FOURSQUARE_SECRET']
-
-    @resp = Faraday.get 'https://api.foursquare.com/v2/venues/search' do |req|
-      req.params['client_id'] = client_id
-      req.params['client_secret'] = client_secret
-      req.params['v'] = '20160201'
-      req.params['near'] = params[:zipcode]
-      req.params['query'] = 'coffee shop'
-    end
-    
-
-    body = JSON.parse(@resp.body)
-
-    if @resp.success?
-      @venues = body["response"]["venues"]
-    else
-      @error = body#["meta"]["errorDetail"]
-    end
-    render 'search'
-
-    rescue Faraday::TimeoutError
-      @error = "There was a timeout. Please try again."
-      render 'search'
-  end
-end 
-
-=end
   

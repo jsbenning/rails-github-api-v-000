@@ -2,14 +2,16 @@ class ApplicationController < ActionController::Base
   # Prevent CSRF attacks by raising an exception.
   # For APIs, you may want to use :null_session instead.
   protect_from_forgery with: :exception
+  before_action :authenticate_user
 
   private
 
-    def authenticate_user
-      resp = Faraday.get("http://github.com/login/oauth/authorize") do |req|
-        req.params['client_id'] = ENV('GITHUB_ID')
-        req.params['redirect_uri'] = "http://localhost:3000/auth"
-        req.params = ENV('GITHUB_STATE')
+    def authenticate_user #first method called (unless logged in); users redirected to request github id
+      client_id = ENV['GITHUB_ID']
+      redirect_uri = CGI.escape("http://localhost:3000/auth")
+      state = ENV['GITHUB_STATE']
+      github_url = "http://github.com/login/oauth/authorize?client_id=#{client_id}&redirect_uri=#{redirect_uri}&state=#{state}" #scope=user%20public_repo
+      redirect_to github_url unless logged_in?    
     end
 
     def logged_in?
