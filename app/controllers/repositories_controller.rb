@@ -1,7 +1,6 @@
 class RepositoriesController < ApplicationController
   before_action :authenticate_user
 
-
   def index
     resp = Faraday.get("https://api.github.com/user") do |req|
       req.params['access_token'] = session[:token]   
@@ -9,18 +8,21 @@ class RepositoriesController < ApplicationController
      
     @name = JSON.parse(resp.body)["login"]
     @repos = pull_repos(@name)
-    
-    
-
   end
+
 
   def create #THE PROBLEM STARTS IN THIS ACTION
 
-    @new_repo = params["name"]
-    @my_resp = post_repo(@new_repo) #I PASS THE FORM PARAM ("NAME")TO THE POST_REPO METHOD
-
-    render 'index' #rendering, rather than redirecting, to view response
+      #OFFICIAL, WHICH I CAN'T GET TO WORK
+  response = Faraday.post "https://api.github.com/user/repos", {name: params[:name]}.to_json, {'Authorization' => "token #{session[:token]}", 'Accept' => 'application/json'}
+    redirect_to '/'
   end
+
+    # @new_repo = params["name"]
+    # @my_resp = post_repo(@new_repo) #I PASS THE FORM PARAM ("NAME")TO THE POST_REPO METHOD
+    # #render 'index' #rendering, rather than redirecting, to view returned value from post_repo method
+    # redirect_to '/'
+  #end
 
 private
 
@@ -33,18 +35,28 @@ private
   end
 
 
-
-                     #THIS METHOD IS GIVING ME PROBLEMS 
-  def post_repo(name)
-    resp = Faraday.post('https://api.github.com/user/repos') do |req|
-      req.body = '{ "name" : name }'
-    end
-
-    github_response = resp.body #to see the response as the returned value
+                     #THIS METHOD IS GIVING ME PROBLEMS
+  def post_repo(name)                 
+    resp = Faraday.post "https://api.github.com/user/repos", {name: name }.to_json, {'Authorization' => "token #{session[:token]}", 'Accept' => 'application/json'}
+    github_response = JSON.parse(resp.body)
   end
 end
+  
 
-                      #SOME ALTERNATIVE ATTEMPTS:  
+                            #SOME ALTERNATIVE ATTEMPTS:
+
+
+                     #NOT PASSING IN EXPLICIT AUTHENTICATION 
+#   def post_repo(name)
+#     resp = Faraday.post('https://api.github.com/user/repos') do |req|
+#       req.body = '{ "name" : name }'
+#     end
+
+#     github_response = resp.body #to see the response as the returned value
+#   end
+# end
+
+                        
                     #ATTEMPT WITH FARADAY'S BUILDER MODULE
     # conn = Faraday.new(url: 'https://api.github.com') do |builder|
     #   builder.use Faraday::Request::TokenAuthentication, session[:token]

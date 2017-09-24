@@ -1,3 +1,6 @@
+
+<!-- session[:username] !!!-->
+
 <div class = "container">
   <% if @name %>
   <h2><%= @name %></h2>
@@ -19,8 +22,9 @@
 
   <%= form_tag("/repositories/create", method: "post") do %>
     <%= label_tag(:name, "Create a New Repo:") %>
-    <%= text_field_tag(:name, nil, id: "new-repo") %>
+    <%= text_field_tag(name: nil, id: "new-repo") %>
     <%= submit_tag("Create") %>
   <% end %>
 </div>
+
 

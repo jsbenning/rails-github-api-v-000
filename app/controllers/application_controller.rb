@@ -6,12 +6,16 @@ class ApplicationController < ActionController::Base
 
   private
 
-    def authenticate_user #first method called (unless logged in); users redirected to request github id
-      client_id = ENV['GITHUB_ID']
-      redirect_uri = CGI.escape("http://localhost:3000/auth")
-      state = ENV['GITHUB_STATE']
-      github_url = "http://github.com/login/oauth/authorize?client_id=#{client_id}&redirect_uri=#{redirect_uri}&state=#{state}" #scope=user%20public_repo
-      redirect_to github_url unless logged_in?    
+    # def authenticate_user #first method called (unless logged in); users redirected to request github id
+    #   client_id = ENV['GITHUB_ID']
+    #   redirect_uri = CGI.escape("http://localhost:3000/auth")
+    #   state = ENV['GITHUB_STATE']
+    #   github_url = "http://github.com/login/oauth/authorize?client_id=#{client_id}&redirect_uri=#{redirect_uri}&state=#{state}" #scope=user%20public_repo
+    #   redirect_to github_url unless logged_in?    
+    # end
+
+    def authenticate_user
+      redirect_to "https://github.com/login/oauth/authorize?client_id=#{ENV['GITHUB_ID']}&scope=repo" if !logged_in?
     end
 
     def logged_in?
@@ -20,19 +24,3 @@ class ApplicationController < ActionController::Base
 end
 
 
-=begin
-from post lab
-
-  def authenticate_user
-    client_id = "ZNGFAGHHFLSVHSNO51ANV20E3XTWTH4F5212DBD3BN05RD1G"#ENV['FOURSQUARE_CLIENT_ID']
-    redirect_uri = CGI.escape("http://localhost:3000/auth")
-    foursquare_url = "https://foursquare.com/oauth2/authenticate?client_id=#{client_id}&response_type=code&redirect_uri=#{redirect_uri}"
-    redirect_to foursquare_url unless logged_in?
-  end
-
-  def logged_in?
-    !!session[:token]
-  end
-end
-
-=end
